@@ -1,0 +1,165 @@
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
+    font-size: 16px;
+}
+html {
+    margin: 0;
+    background: #f8f9f9 linear-gradient(0deg, #f8f9f9 0%, #f8f9f9 83%, #4b82c5 83%, #4b82c5 100%) no-repeat;
+    padding: 30px;
+    height: 100%;
+}
+h1, h2, h3, h4, h5 {
+    color: #4a5361;
+    margin: 0;
+    padding: 0;
+}
+.file-manager {
+    background: #fff;
+    width: 100%; /* Full width for mobile */
+    max-width: 600px; /* Max width for larger screens */
+    margin: 0 auto;
+    margin-top: 30px;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+}
+.file-manager form {
+    display: flex;
+    flex-flow: column;
+    padding: 15px;
+}
+.file-manager form label {
+    padding: 10px 0;
+}
+.file-manager form input, .file-manager form select, .file-manager form button {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #c4c7cf;
+    border-radius: 4px;
+}
+.file-manager form button {
+    background-color: #4a79b4;
+    color: #fff;
+    margin-top: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+.file-manager form button:hover {
+    background-color: #4672a9;
+}
+.file-manager-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f1f1f1;
+}
+.file-manager-header h1 {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    color: #7f828a;
+}
+.file-manager-header a {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50px;
+    background-color: #397ed3;
+    color: #fff;
+    text-decoration: none;
+}
+.file-manager-header a:hover {
+    background-color: #2e76cf;
+}
+
+@media (min-width: 768px) {
+    html, body {
+        padding: 30px; /* Increased padding for larger screens */
+    }
+    .file-manager {
+        width: 600px; /* Fixed width for desktop */
+    }
+    .file-manager form input, .file-manager form select, .file-manager form button {
+        max-width: none; /* Remove max width restriction for larger screens */
+    }
+    .file-manager-header a {
+        width: 34px; /* Keep the original icon size for desktop */
+        height: 34px;
+    }
+}
+
+.file-manager-table tbody tr {
+    background-color: #f7f9fa;
+    border-bottom: 1px solid #dbdde0;
+  }
+  .file-manager-table tbody tr:nth-child(even) {
+    background-color: #fff;
+  }
+  .file-manager-table tbody tr.selected {
+    background-color: #dceeff;
+    border-bottom: 1px solid #b0cae2;
+  }
+  .file-manager-table tbody tr td {
+    padding: 15px;
+    color: #000;
+  }
+  .file-manager-table tbody tr td.name {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .file-manager-table tbody tr td.name i {
+    width: 25px;
+    min-width: 25px;
+  }
+  .file-manager-table tbody tr td.name i.fa-folder {
+    color: #FBD200;
+  }
+  .file-manager-table tbody tr td.name i.fa-file {
+    color: #b9bbbe;
+  }
+  .file-manager-table tbody tr td.name a {
+    text-decoration: none;
+    color: #000;
+  }
+  .file-manager-table tbody tr td.name a:hover {
+    text-decoration: underline;
+  }
+  .file-manager-table tbody tr td.date {
+    font-size: 14px;
+    color: #53555a;
+  }
+  .file-manager-table tbody tr td.actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: #4a79b4;
+    color: #FFFFFF;
+    padding: 11px 6px;
+    border-radius: 4px;
+    margin-right: 2px;
+  }
+  .file-manager-table tbody tr td.actions .btn:hover {
+    background: #4672a9;
+  }
+  .file-manager-table tbody tr td.actions .btn.green {
+    background: #4ab46d;
+  }
+  .file-manager-table tbody tr td.actions .btn.green:hover {
+    background: #46a966;
+  }
+  .file-manager-table tbody tr td.actions .btn.red {
+    background: #b44a4a;
+  }
+  .file-manager-table tbody tr td.actions .btn.red:hover {
+    background: #a94646;
+  }
+  .file-manager-table tbody tr td.actions .btn:last-child {
+    margin-right: 0;
+  }
