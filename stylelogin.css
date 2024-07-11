@@ -1,50 +1,52 @@
 body {
-    font-family: 'Arial', sans-serif; /* Use a clean, modern font */
-    margin: 0;
-    padding: 0;
-    height: 100vh; /* Full height of the viewport */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    background-color: #f7f7f7; /* Light gray background */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
 
-/* Styling the form */
-form {
-    background: white; /* White background for the form */
-    padding: 20px; /* Padding around the form content */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-    display: inline-block;
+.login-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 300px;
 }
 
-/* Styling the input fields */
-input[type=text], input[type=password] {
-    width: calc(100% - 22px); /* Full width minus padding */
-    padding: 10px; /* Comfortable padding inside the inputs */
-    margin-top: 8px; /* Margin top for spacing between inputs */
-    margin-bottom: 16px; /* Margin bottom for spacing */
-    border: 1px solid #ccc; /* Light gray border */
-    border-radius: 4px; /* Rounded corners for the input fields */
+.form-group {
+    margin-bottom: 15px;
 }
 
-/* Styling the submit button */
-input[type=submit] {
-    background-color: #4CAF50; /* Green background for the submit button */
-    color: white; /* White text color */
-    padding: 10px 15px; /* Padding */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    width: 100%; /* Full width */
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
 }
 
-input[type=submit]:hover {
-    background-color: #45a049; /* Darker shade of green on hover */
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
 }
 
-/* Error message styling */
-p {
-    color: red; /* Red color for error messages */
-    font-size: 0.9em; /* Smaller font size for error text */
+input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+.error-message {
+    color: red;
+    margin-top: 15px;
+    text-align: center;
 }

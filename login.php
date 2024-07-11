@@ -35,13 +35,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['pa
     <title>Login</title>
 </head>
 <body>
-    <form method="post">
-        Username: <input type="text" name="username"><br>
-        Password: <input type="password" name="password"><br>
-        <input type="submit" value="Login">
-    </form>
-    <?php if ($error): ?>
-        <p><?php echo $error; ?></p>
-    <?php endif; ?>
+    <div class="login-container">
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+            <input type="submit" value="Login">
+        </form>
+        <?php if ($error): ?>
+            <div class="error-message"><?php echo $error; ?></div>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
