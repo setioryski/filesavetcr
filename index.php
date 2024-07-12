@@ -1,5 +1,4 @@
 <?php
-// Start the session
 session_start();
 
 // Redirect to login page if not logged in
@@ -16,7 +15,7 @@ if (isset($_GET['file'])) {
     // If the file is a directory
     if (is_dir($_GET['file'])) {
         // Update the current directory
-        $current_directory = $_GET['file'] . '/';
+        $current_directory = rtrim($_GET['file'], '/') . '/';
     } else {
         // Download file
         header('Content-Description: File Transfer');
@@ -72,6 +71,21 @@ function get_filetype_icon($filetype) {
 // Extract base and current folder names
 $base_folder = basename(realpath($initial_directory));
 $current_folder = basename(realpath($current_directory));
+
+function build_breadcrumb($initial_directory, $current_directory) {
+    $breadcrumb = htmlspecialchars(basename(realpath($initial_directory)));
+    $path = $initial_directory;
+    $parts = explode('/', trim(str_replace($initial_directory, '', $current_directory), '/'));
+    foreach ($parts as $part) {
+        if ($part) {
+            $path .= $part . '/';
+            $breadcrumb .= ' / ' . htmlspecialchars($part);
+        }
+    }
+    return rtrim($breadcrumb, ' / '); // remove trailing slash and space
+}
+
+$breadcrumb = build_breadcrumb($initial_directory, $current_directory);
 ?>
 
 <!DOCTYPE html>
@@ -80,63 +94,92 @@ $current_folder = basename(realpath($current_directory));
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <title>File Management System</title>
-    <link href="style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="style-desktop.css" media="screen and (min-width: 601px)">
+    <link rel="stylesheet" href="style-mobile.css" media="screen and (max-width: 600px)">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-        .hidden { display: none; }
-        .message { margin-top: 20px; }
-        .success { color: green; }
-        .error { color: red; }
-        .file-manager-header { display: flex; justify-content: space-between; align-items: center; }
-        .btn { cursor: pointer; }
-        .btn.blue { color: blue; }
-        .btn.red { color: red; }
-        .btn.green { color: green; }
-        .breadcrumb { margin: 20px 0; }
+        .breadcrumb a {
+            color: gray;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb {
+            font-size: 16px;
+            color: gray;
+        }
+        .breadcrumb .breadcrumb-slash {
+            margin: 0 5px;
+        }
+        .upload-button {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+            background-color: #397ed3;
+            color: #fff;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="file-manager">
-        <div class="file-manager-header">
+        <div class="file-manager-container">
+            <div class="file-manager-header">
             <div class="breadcrumb">
-                <span><?= htmlspecialchars($base_folder) ?></span> / 
-                <span><?= htmlspecialchars($current_folder) ?></span>
+    <?php
+    $basePath = 'Uploads'; // adjust this to your base folder name
+    $currentPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $current_folder);
+    $relativePath = str_replace($basePath, '', $currentPath);
+    $path = array_filter(explode('/', $relativePath));
+    $breadcrumb = array();
+    $currentPath = $basePath;
+    foreach ($path as $folder) {
+        $currentPath .= '/' . $folder;
+        $breadcrumb[] = '<span>' . htmlspecialchars($folder) . '</span>';
+    }
+    echo '<span>' . htmlspecialchars($basePath) . '</span> / ' . implode(' / ', $breadcrumb);
+    ?>
+</div>
+                <a href="upload.php?directory=<?= urlencode($current_directory) ?>" class="upload-button"><i class="fa-solid fa-plus"></i></a>
             </div>
-            <a href="upload.php?directory=<?= urlencode($current_directory) ?>"><i class="fa-solid fa-plus"></i></a>
-        </div>
 
-        <table class="file-manager-table">
-            <thead>
-                <tr>
-                    <td class="selected-column">Name<i class="fa-solid fa-arrow-down-long fa-xs"></i></td>
-                    <td>Size</td>
-                    <td>Modified</td>
-                    <td>Actions</td>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (isset($_GET['file']) && realpath($current_directory) != realpath($initial_directory)): ?>
-                <tr>
-                    <td colspan="10" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode($_GET['file']) . '/..' ?>">...</a></td>
-                </tr>
-                <?php endif; ?>
-                <?php foreach ($results as $result): ?>
-                <tr class="file" data-file="<?= htmlspecialchars($result) ?>">
-                    <td class="name"><?= get_filetype_icon($result) ?><a class="view-file" href="?file=<?= urlencode($result) ?>"><?= basename($result) ?></a></td>
-                    <td><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
-                    <td class="date"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
-                    <td class="actions">
-                        <?php if (!is_dir($result)): ?>
-                        <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
-                        <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
-                        <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+            <table class="file-manager-table">
+                <thead>
+                    <tr>
+                        <th class="selected-column">Name<i class="fa-solid fa-arrow-down-long fa-xs"></i></th>
+                        <th>Size</th>
+                        <th>Modified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (isset($_GET['file']) && realpath($current_directory) != realpath($initial_directory)): ?>
+                    <tr>
+                        <td colspan="4" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode(dirname($_GET['file'])) ?>">...</a></td>
+                    </tr>
+                    <?php endif; ?>
+                    <?php foreach ($results as $result): ?>
+                    <tr class="file" data-file="<?= htmlspecialchars($result) ?>">
+                        <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file" href="?file=<?= urlencode($result) ?>"><?= basename($result) ?></a></td>
+                        <td data-label="Size"><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
+                        <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
+                        <td class="actions" data-label="Actions">
+                            <?php if (!is_dir($result)): ?>
+                            <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
+                            <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
+                            <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
         <div id="message" class="message hidden"></div>
     </div>

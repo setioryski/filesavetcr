@@ -1,0 +1,256 @@
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    background: #f8f9f9;
+    padding: 10px;
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.file-manager {
+    background: #fff;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    margin-top: 30px;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.file-manager-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+}
+
+.file-manager-header.breadcrump {
+    font-size: 14px;
+    color: #7f828a;
+    font-weight: 500;
+}
+
+.file-manager-header a {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    text-decoration: none;
+}
+
+.file-manager-header a:hover {
+    background-color: #2e76cf;
+}
+
+.file-manager-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensure fixed layout */
+}
+
+.file-manager-table th, .file-manager-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-manager-table th {
+    background-color: #f4f4f4;
+    font-weight: 600;
+    color: #7f828a;
+}
+
+.file-manager-table tbody tr {
+    background-color: #fff;
+}
+
+.file-manager-table tbody tr:nth-child(even) {
+    background-color: #f7f9fa;
+}
+
+.file-manager-table tbody tr.selected {
+    background-color: #dceeff;
+    border-bottom: 1px solid #b0cae2;
+}
+
+.file-manager-table tbody tr.file {
+    background-color: #fff;
+    width: 370px; /* Set fixed width for tr.file */
+}
+
+.file-manager-table tbody tr td {
+    padding: 15px;
+    color: #000;
+    display: flex;
+    align-items: center;
+}
+
+.file-manager-table tbody tr td.name {
+    max-width: 200px; /* Adjust the width as needed */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-manager-table tbody tr td.name i {
+    margin-right: 10px;
+}
+
+.file-manager-table tbody tr td.name i.fa-folder {
+    color: #FBD200;
+}
+
+.file-manager-table tbody tr td.name i.fa-file {
+    color: #b9bbbe;
+}
+
+.file-manager-table tbody tr td.name a {
+    text-decoration: none;
+    color: #000;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-manager-table tbody tr td.name a:hover {
+    text-decoration: underline;
+}
+
+.file-manager-table tbody tr td.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-manager-table tbody tr td.actions.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: #4a79b4;
+    color: #FFFFFF;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+
+.file-manager-table tbody tr td.actions.btn i {
+    font-size: 16px;
+}
+
+.file-manager-table tbody tr td.actions.btn:hover {
+    background: #4672a9;
+}
+
+.file-manager-table tbody tr td.actions.btn.green {
+    background: #4ab46d;
+}
+
+.file-manager-table tbody tr td.actions.btn.green:hover {
+    background: #46a966;
+}
+
+.file-manager-table tbody tr td.actions.btn.red {
+    background: #b44a4a;
+}
+
+.file-manager-table tbody tr td.actions.btn.red:hover {
+    background: #a94646;
+}
+
+/* Hide size and modified columns */
+.file-manager-table th:nth-child(2), .file-manager-table th:nth-child(3),
+.file-manager-table td:nth-child(2), .file-manager-table td:nth-child(3) {
+    display: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    html, body {
+        padding: 10px;
+    }
+
+    .file-manager {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .file-manager-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .file-manager-header .breadcrump {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .file-manager-header a {
+        width: 30px;
+        height: 30px;
+    }
+
+    .file-manager-table {
+        width: 100%;
+    }
+
+    .file-manager-table th, .file-manager-table td {
+        padding: 10px;
+        white-space: nowrap;
+    }
+
+    .file-manager-table tbody tr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .file-manager-table tbody tr td {
+        padding: 10px;
+    }
+
+    .file-manager-table tbody tr td.actions {
+        justify-content: flex-start;
+        gap: 5px;
+    }
+
+    .file-manager-table tbody tr td.actions .btn {
+        padding: 8px;
+    }
+}
+
+.message {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}

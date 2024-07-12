@@ -7,48 +7,61 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$initial_directory = 'uploads/';
-
-if (isset($_GET['directory'])) {
-    $current_directory = realpath($_GET['directory']);
-    if ($current_directory === false || strpos($current_directory, realpath($initial_directory)) !== 0) {
-        die("Error: Invalid directory path");
-    }
-} else {
+function handleUpload() {
+    $initial_directory = 'uploads/';
     $current_directory = $initial_directory;
-}
 
-$response = array('success' => false, 'messages' => array());
+    // Determine the current directory
+    if (isset($_GET['file'])) {
+        $current_directory = realpath($_GET['file']);
+        if ($current_directory === false || strpos($current_directory, realpath($initial_directory)) !== 0) {
+            die("Error: Invalid directory path");
+        }
+    } elseif (isset($_GET['directory'])) {
+        $current_directory = realpath($_GET['directory']);
+        if ($current_directory === false || strpos($current_directory, realpath($initial_directory)) !== 0) {
+            die("Error: Invalid directory path");
+        }
+    }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
-    if (realpath($current_directory) == realpath($initial_directory)) {
-        $response['messages'][] = "Error: You cannot upload files directly to the base 'uploads' folder.";
-    } else {
-        $files = $_FILES['files'];
-        $total_files = count($files['name']);
+    $response = array('success' => false, 'messages' => array());
 
-        for ($i = 0; $i < $total_files; $i++) {
-            $filename = basename($files['name'][$i]);
-            $targetFile = rtrim($current_directory, '/') . '/' . $filename;
+    // Handle file upload
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
+        if (realpath($current_directory) == realpath($initial_directory)) {
+            $response['messages'][] = "Error: You cannot upload files directly to the base 'uploads' folder.";
+        } else {
+            $files = $_FILES['files'];
+            $total_files = count($files['name']);
 
-            if (file_exists($targetFile)) {
-                $response['messages'][] = "Sorry, file $filename already exists.";
-            } else {
-                if (move_uploaded_file($files['tmp_name'][$i], $targetFile)) {
-                    $response['messages'][] = "The file $filename has been uploaded.";
+            for ($i = 0; $i < $total_files; $i++) {
+                $filename = basename($files['name'][$i]);
+                $targetFile = rtrim($current_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+
+                if (file_exists($targetFile)) {
+                    $response['messages'][] = "Sorry, file $filename already exists.";
                 } else {
-                    $response['messages'][] = "Sorry, there was an error uploading $filename.";
+                    if (move_uploaded_file($files['tmp_name'][$i], $targetFile)) {
+                        $response['messages'][] = "The file $filename has been uploaded.";
+                    } else {
+                        $response['messages'][] = "Sorry, there was an error uploading $filename.";
+                    }
                 }
             }
+
+            $response['success'] = true;
         }
 
-        $response['success'] = true;
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
     }
 
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit;
+    return $current_directory;
 }
+
+$current_directory = handleUpload();
+$last_directory = basename($current_directory);
 ?>
 
 <!DOCTYPE html>
@@ -137,65 +150,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
     </style>
 </head>
 <body>
-    <div class="upload-container">
-        <h1>Upload Files to <?= htmlspecialchars($current_directory) ?></h1>
-        <form id="uploadForm" action="?directory=<?= urlencode($current_directory) ?>" method="post" enctype="multipart/form-data">
-            <label for="fileToUpload">Select files to upload:</label>
-            <input type="file" name="files[]" id="fileToUpload" multiple required>
-            <input type="submit" value="Upload Files" name="submit">
-        </form>
-        <div id="loading" class="hidden">Uploading...</div>
-        <div class="progress-bar-container hidden" id="progress-bar-container">
-            <div class="progress-bar" id="progress-bar">0%</div>
-        </div>
-        <div id="result" class="hidden"></div>
-        <a href="index.php?file=<?= urlencode($current_directory) ?>" class="back-link">Back to File Manager</a>
-    </div>
+<div class="upload-container">
+    <h1>Upload Files to <?= htmlspecialchars($last_directory) ?></h1>
+    <form id="uploadForm" action="?directory=<?= urlencode($current_directory) ?>" method="post" enctype="multipart/form-data">
+        <label for="fileToUpload">Select files to upload:</label>
+        <input type="file" name="files[]" id="fileToUpload" multiple required>
+        <input type="submit" value="Upload Files" name="submit">
+    </form>
+</div>
+<div id="loading" class="hidden">Uploading...</div>
+<div class="progress-bar-container hidden" id="progress-bar-container">
+    <div class="progress-bar" id="progress-bar">0%</div>
+</div>
+<div id="result" class="hidden"></div>
+<a href="index.php?file=<?= urlencode($current_directory) ?>" class="back-link">Back to File Manager</a>
 
-    <script>
-        $(document).ready(function() {
-            $('#uploadForm').on('submit', function(e) {
-                e.preventDefault();  // Prevent the default form submission
+<script>
+    $(document).ready(function() {
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();  // Prevent the default form submission
 
-                var formData = new FormData(this);
-                var xhr = new XMLHttpRequest();
+            var formData = new FormData(this);
+            var xhr = new XMLHttpRequest();
 
-                xhr.upload.addEventListener('progress', function(e) {
-                    if (e.lengthComputable) {
-                        var percentComplete = (e.loaded / e.total) * 100;
-                        $('#progress-bar').css('width', percentComplete + '%').text(Math.round(percentComplete) + '%');
-                    }
-                });
-
-                xhr.upload.addEventListener('loadstart', function() {
-                    $('#loading').removeClass('hidden');
-                    $('#progress-bar-container').removeClass('hidden');
-                    $('#result').addClass('hidden').text('');
-                });
-
-                xhr.upload.addEventListener('loadend', function() {
-                    $('#loading').addClass('hidden');
-                });
-
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE) {
-                        $('#progress-bar-container').addClass('hidden');
-                        $('#result').removeClass('hidden');
-                        var response = JSON.parse(xhr.responseText);
-                        response.messages.forEach(function(message) {
-                            if (response.success) {
-                                $('#result').css('color', 'green').append('<p>' + message + '</p>');
-                            } else {
-                                $('#result').css('color', 'red').append('<p>' + message + '</p>');
-                            }
-                        });
-                    }
-                };
-
-                xhr.open('POST', this.action, true);
-                xhr.send(formData);
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    $('#progress-bar').css('width', percentComplete + '%').text(Math.round(percentComplete) + '%');
+                }
             });
+
+            xhr.upload.addEventListener('loadstart', function() {
+                $('#loading').removeClass('hidden');
+                $('#progress-bar-container').removeClass('hidden');
+                $('#result').addClass('hidden').text('');
+            });
+
+            xhr.upload.addEventListener('loadend', function() {
+                $('#loading').addClass('hidden');
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    $('#progress-bar-container').addClass('hidden');
+                    $('#result').removeClass('hidden');
+                    var response = JSON.parse(xhr.responseText);
+                    response.messages.forEach(function(message) {
+                        if (response.success) {
+                            $('#result').css('color', 'green').append('<p>' + message + '</p>');
+                        } else {
+                            $('#result').css('color', 'red').append('<p>' + message + '</p>');
+                        }
+                    });
+                }
+            };
+
+            xhr.open('POST', this.action, true);
+            xhr.send(formData);
         });
-    </script>
+    });
+</script>
 </body>
 </html>
