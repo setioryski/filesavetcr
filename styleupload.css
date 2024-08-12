@@ -1,0 +1,177 @@
+/* General Styles */
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  height: 100%;
+  background: #f2f2f7;
+  padding: 20px;
+}
+
+h1, h2, h3, h4, h5 {
+  color: #333;
+  margin: 0 0 20px;
+  padding: 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+.upload-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input[type="file"], input[type="date"], input[type="text"], .tenant-search input {
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #fafafa;
+  font-size: 16px;
+  color: #333;
+  transition: border 0.3s ease, background-color 0.3s ease;
+  appearance: none;
+  width: 100%;  /* Ensure full width for all input fields */
+}
+
+input[type="file"] {
+  padding: 14px 10px;
+}
+
+input[type="file"]:focus, input[type="date"]:focus, input[type="text"]:focus, .tenant-search input:focus {
+  border-color: #007aff;
+  background-color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+}
+
+input[type="submit"] {
+  background: #007aff;
+  color: white;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background 0.3s ease, transform 0.1s ease;
+  width: 100%; /* Ensure full width for submit button */
+}
+
+input[type="submit"]:hover {
+  background: #005bb5;
+}
+
+input[type="submit"]:active {
+  transform: scale(0.98);
+}
+
+/* Notification Styles */
+.notification {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  display: none;
+  font-weight: 600;
+  font-size: 16px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.notification.success {
+  background-color: #34c759; /* iPhone-like green */
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification.error {
+  background-color: #ff3b30; /* iPhone-like red */
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* iPhone-style Dropdown */
+.tenant-search {
+  position: relative;
+  width: 100%;
+}
+
+.tenant-search input {
+  width: 100%;  /* Ensure the search box takes full width */
+}
+
+.tenant-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;  /* Ensure the dropdown list takes full width */
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  background: #fff;
+  z-index: 1000;
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.tenant-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tenant-list li {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.tenant-list li:hover {
+  background-color: #f0f0f5;
+  border-radius: 12px;
+}
+
+/* Fade-In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .upload-container {
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .upload-container {
+    max-width: 500px;
+  }
+}

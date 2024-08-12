@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // The initial directory path (e.g. /www/your_directory/)
-$initial_directory = 'uploads/';
+$initial_directory = 'Uploads/';
 // The current directory path
 $current_directory = $initial_directory;
 if (isset($_GET['file'])) {
@@ -55,17 +55,48 @@ function convert_filesize($bytes, $precision = 2) {
 }
 
 // Determine the file type icon
-function get_filetype_icon($filetype) {
-    if (is_dir($filetype)) {
+function get_filetype_icon($file) {
+    static $mime_cache = [];
+
+    // Check if file is a directory
+    if (is_dir($file)) {
         return '<i class="fa-solid fa-folder"></i>';
-    } else if (preg_match('/image\/*/', mime_content_type($filetype))) {
-        return '<i class="fa-solid fa-file-image"></i>';
-    } else if (preg_match('/video\/*/', mime_content_type($filetype))) {
-        return '<i class="fa-solid fa-file-video"></i>';
-    } else if (preg_match('/audio\/*/', mime_content_type($filetype))) {
-        return '<i class="fa-solid fa-file-audio"></i>';
     }
-    return '<i class="fa-solid fa-file"></i>';
+
+    // Get mime type and cache it
+    if (!isset($mime_cache[$file])) {
+        $mime_type = @mime_content_type($file);
+        if ($mime_type === false) {
+            $mime_type = 'application/octet-stream'; // Default to a binary file type
+        }
+        $mime_cache[$file] = $mime_type;
+    } else {
+        $mime_type = $mime_cache[$file];
+    }
+
+    // Determine the icon based on the mime type
+    switch (true) {
+        case preg_match('/^image\//', $mime_type):
+            return '<i class="fa-solid fa-file-image"></i>';
+        case preg_match('/^video\//', $mime_type):
+            return '<i class="fa-solid fa-file-video"></i>';
+        case preg_match('/^audio\//', $mime_type):
+            return '<i class="fa-solid fa-file-audio"></i>';
+        case preg_match('/^application\/pdf$/', $mime_type):
+            return '<i class="fa-solid fa-file-pdf"></i>';
+        case preg_match('/^application\/(msword|vnd.openxmlformats-officedocument.wordprocessingml.document)$/', $mime_type):
+            return '<i class="fa-solid fa-file-word"></i>';
+        case preg_match('/^application\/(vnd.ms-excel|vnd.openxmlformats-officedocument.spreadsheetml.sheet)$/', $mime_type):
+            return '<i class="fa-solid fa-file-excel"></i>';
+        case preg_match('/^application\/(vnd.ms-powerpoint|vnd.openxmlformats-officedocument.presentationml.presentation)$/', $mime_type):
+            return '<i class="fa-solid fa-file-powerpoint"></i>';
+        case preg_match('/^text\//', $mime_type):
+            return '<i class="fa-solid fa-file-alt"></i>';
+        case preg_match('/^application\/(zip|x-tar|gzip)$/', $mime_type):
+            return '<i class="fa-solid fa-file-archive"></i>';
+        default:
+            return '<i class="fa-solid fa-file"></i>';
+    }
 }
 
 // Extract base and current folder names
@@ -89,6 +120,7 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
 ?>
 
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -99,53 +131,111 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-        .breadcrumb a {
-            color: gray;
+        /* Styles for the image modal */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            padding-top: 60px; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .modal-content, #caption {  
+            animation-name: zoom;
+            animation-duration: 0.6s;
+        }
+
+        @keyframes zoom {
+            from {transform:scale(0)} 
+            to {transform:scale(1)}
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
             text-decoration: none;
+            cursor: pointer;
         }
-        .breadcrumb a:hover {
-            text-decoration: underline;
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -50px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
         }
-        .breadcrumb {
-            font-size: 16px;
-            color: gray;
+
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
         }
-        .breadcrumb .breadcrumb-slash {
-            margin: 0 5px;
+
+        .prev:hover, .next:hover {
+            background-color: rgba(0,0,0,0.8);
         }
-        .upload-button {
-            width: 34px;
-            height: 34px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50px;
-            background-color: #397ed3;
-            color: #fff;
-            text-decoration: none;
+
+        #caption {
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+            height: auto;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
+
     </style>
 </head>
 <body>
     <div class="file-manager">
         <div class="file-manager-container">
             <div class="file-manager-header">
-            <div class="breadcrumb">
-    <?php
-    $basePath = 'Uploads'; // adjust this to your base folder name
-    $currentPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $current_folder);
-    $relativePath = str_replace($basePath, '', $currentPath);
-    $path = array_filter(explode('/', $relativePath));
-    $breadcrumb = array();
-    $currentPath = $basePath;
-    foreach ($path as $folder) {
-        $currentPath .= '/' . $folder;
-        $breadcrumb[] = '<span>' . htmlspecialchars($folder) . '</span>';
-    }
-    echo '<span>' . htmlspecialchars($basePath) . '</span> / ' . implode(' / ', $breadcrumb);
-    ?>
-</div>
-                <a href="upload.php?directory=<?= urlencode($current_directory) ?>" class="upload-button"><i class="fa-solid fa-plus"></i></a>
+                <div class="breadcrumb">
+                    <?php
+                    $basePath = 'Uploads'; // adjust this to your base folder name
+                    $currentPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $current_folder);
+                    $relativePath = str_replace($basePath, '', $currentPath);
+                    $path = array_filter(explode('/', $relativePath));
+                    $breadcrumb = array();
+                    $currentPath = $basePath;
+                    foreach ($path as $folder) {
+                        $currentPath .= '/' . $folder;
+                        $breadcrumb[] = '<span>' . htmlspecialchars($folder) . '</span>';
+                    }
+                    echo '<span>' . htmlspecialchars($basePath) . '</span> / ' . implode(' / ', $breadcrumb);
+                    ?>
+                </div>
+                <a href="submit.php?directory=<?= urlencode($current_directory) ?>" class="upload-button"><i class="fa-solid fa-plus"></i></a>
             </div>
 
             <table class="file-manager-table">
@@ -165,16 +255,16 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
                     <?php endif; ?>
                     <?php foreach ($results as $result): ?>
                     <tr class="file" data-file="<?= htmlspecialchars($result) ?>">
-                        <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file" href="?file=<?= urlencode($result) ?>"><?= basename($result) ?></a></td>
+                        <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file truncate" href="?file=<?= urlencode($result) ?>" data-fullname="<?= basename($result) ?>"><?= basename($result) ?></a></td>
                         <td data-label="Size"><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
                         <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
-                        <td class="actions" data-label="Actions">
-                            <?php if (!is_dir($result)): ?>
-                            <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
-                            <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
-                            <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
-                            <?php endif; ?>
-                        </td>
+                        <td class="actions">
+                        <?php if (!is_dir($result)): ?>
+                        <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
+                        <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
+                        <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
+                        <?php endif; ?>
+                    </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -182,6 +272,15 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
         </div>
 
         <div id="message" class="message hidden"></div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <a class="prev">&#10094;</a>
+        <img class="modal-content" id="img01">
+        <a class="next">&#10095;</a>
+        <div id="caption"></div>
     </div>
 
     <script>
@@ -212,7 +311,71 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
                     });
                 }
             });
+
+            // JavaScript to truncate filename but keep the extension
+            $('.truncate').each(function() {
+                var text = $(this).text();
+                var maxLength = 30; // Adjust this value as needed
+                if (text.length > maxLength) {
+                    var extIndex = text.lastIndexOf('.');
+                    if (extIndex > 0) {
+                        var name = text.substring(0, extIndex);
+                        var ext = text.substring(extIndex);
+                        var truncatedName = name.slice(0, maxLength - ext.length - 8) + '..u';
+                        $(this).text(truncatedName + ext);
+                    } else {
+                        var truncatedText = text.slice(0, maxLength - 8) + '..d';
+                        $(this).text(truncatedText);
+                    }
+                }
+            });
+
+            // JavaScript for image gallery
+            var modal = document.getElementById("myModal");
+            var modalImg = document.getElementById("img01");
+            var captionText = document.getElementById("caption");
+            var images = $("a.view-file").filter(function() {
+                return $(this).closest("tr").find("i.fa-file-image").length > 0;
+            });
+            var currentIndex = -1;
+
+            images.on("click", function(event) {
+                event.preventDefault();
+                currentIndex = images.index(this);
+                modal.style.display = "block";
+                modalImg.src = this.href;
+                captionText.innerHTML = $(this).data("fullname"); // Set full filename in caption
+            });
+
+            $(".close").on("click", function() {
+                modal.style.display = "none";
+            });
+
+            $(".prev").on("click", function() {
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : images.length - 1;
+                modalImg.src = images[currentIndex].href;
+                captionText.innerHTML = images.eq(currentIndex).data("fullname"); // Set full filename in caption
+            });
+
+            $(".next").on("click", function() {
+                currentIndex = (currentIndex < images.length - 1) ? currentIndex + 1 : 0;
+                modalImg.src = images[currentIndex].href;
+                captionText.innerHTML = images.eq(currentIndex).data("fullname"); // Set full filename in caption
+            });
+
+            $(document).keydown(function(e) {
+                if (modal.style.display === "block") {
+                    if (e.key === "ArrowLeft") {
+                        $(".prev").click();
+                    } else if (e.key === "ArrowRight") {
+                        $(".next").click();
+                    } else if (e.key === "Escape") {
+                        modal.style.display = "none";
+                    }
+                }
+            });
         });
     </script>
 </body>
 </html>
+
