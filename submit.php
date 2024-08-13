@@ -140,7 +140,7 @@ $last_directory = basename($current_directory);
         <label for="date">Select Date:</label>
         <input type="date" id="date" name="date" required readonly>
 
-        <label for="name">Name:</label>
+        <label for="name">Customer Name:</label>
         <input type="text" id="name" name="name" required>
 
         <label for="tenant-search">Tenant:</label>

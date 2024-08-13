@@ -14,7 +14,10 @@ $result = $conn->query("SELECT users.id, users.username, role.role_name FROM use
 </head>
 <body>
     <h1>Users</h1>
-    <a href="add_user.php">Add User</a>
+    <div style="margin-bottom: 20px;">
+        <a href="add_user.php">Add User</a>
+        <a href="index.php">Back To Home</a>
+    </div>
     <table border="1">
         <tr>
             <th>ID</th>
