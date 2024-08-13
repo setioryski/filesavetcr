@@ -249,24 +249,26 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
                 </thead>
                 <tbody>
                     <?php if (isset($_GET['file']) && realpath($current_directory) != realpath($initial_directory)): ?>
-                    <tr>
-                        <td colspan="4" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode(dirname($_GET['file'])) ?>">...</a></td>
-                    </tr>
-                    <?php endif; ?>
-                    <?php foreach ($results as $result): ?>
-                    <tr class="file" data-file="<?= htmlspecialchars($result) ?>">
-                        <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file truncate" href="?file=<?= urlencode($result) ?>" data-fullname="<?= basename($result) ?>"><?= basename($result) ?></a></td>
-                        <td data-label="Size"><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
-                        <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
-                        <td class="actions">
-                        <?php if (!is_dir($result)): ?>
-                        <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
-                        <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
-                        <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
-                        <?php endif; ?>
-                    </td>
-                    </tr>
-                    <?php endforeach; ?>
+                        <tr>
+    <td colspan="4" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode(dirname($_GET['file'])) ?>">...</a></td>
+</tr>
+<?php endif; ?>
+<?php foreach ($results as $result): ?>
+<tr class="file" data-file="<?= htmlspecialchars($result) ?>">
+    <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file truncate" href="?file=<?= urlencode($result) ?>" data-fullname="<?= basename($result) ?>"><?= basename($result) ?></a></td>
+    <td data-label="Size"><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
+    <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
+    <td class="actions">
+        <?php if (!is_dir($result)): ?>
+            <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
+                <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
+                <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
+            <?php endif; ?>
+        <?php endif; ?>
+    </td>
+</tr>
+<?php endforeach; ?>
                 </tbody>
             </table>
         </div>

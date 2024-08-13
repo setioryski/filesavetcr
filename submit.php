@@ -127,7 +127,11 @@ $last_directory = basename($current_directory);
 </head>
 <body>
 <div class="upload-container">
-    <div class="welcome-message">Welcome, <?= htmlspecialchars($username); ?>!</div> <!-- Welcome message added -->
+    <div class="welcome-message">
+        Welcome, <?= htmlspecialchars($username); ?>!
+        <!-- Logout button added -->
+        <a href="logout.php" class="logout-button" style="float: right; padding: 5px 10px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
+    </div>
     <h1>Upload Files to <?= htmlspecialchars($last_directory) ?></h1>
     <form id="uploadForm" action="?directory=<?= urlencode($current_directory) ?>" method="post" enctype="multipart/form-data">
         <label for="fileToUpload">Take a picture to upload:</label>
@@ -397,12 +401,6 @@ $(document).ready(function() {
     }
 });
 </script>
-
-
-
-
-
-
 
 </body>
 </html>
