@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'db.php';  // Ensure your database connection file is correctly included
 
 $query = isset($_GET['query']) ? $_GET['query'] : '';
@@ -20,11 +21,7 @@ while ($row = $result->fetch_assoc()) {
     $tenants[] = array("id" => $row['id'], "name" => $row['name_tenant']);
 }
 
-// echo json_encode($tenants);
-?>
 
-<?php
-session_start();
 
 // Authentication check
 if (!isset($_SESSION['user_id'])) {
@@ -128,9 +125,11 @@ $last_directory = basename($current_directory);
 <body>
 <div class="upload-container">
     <div class="welcome-message">
-        Welcome, <?= htmlspecialchars($username); ?>!
-        <!-- Logout button added -->
-        <a href="logout.php" class="logout-button" style="float: right; padding: 5px 10px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
+        <span>Welcome, <?= htmlspecialchars($username); ?></span>
+        <a href="logout.php" class="logout-button">Logout</a>
+    </div>
+    <div class="back-link">
+        <a href="index.php?file=<?= urlencode($current_directory) ?>" class="back-button">← Back to Directory</a>
     </div>
     <h1>Upload Files to <?= htmlspecialchars($last_directory) ?></h1>
     <form id="uploadForm" action="?directory=<?= urlencode($current_directory) ?>" method="post" enctype="multipart/form-data">
@@ -148,7 +147,7 @@ $last_directory = basename($current_directory);
             <input type="text" id="tenant-search" placeholder="Search tenants...">
             <div class="tenant-list" id="tenant-list"></div>
         </div>
-        <div id="selected-tenants"></div>
+        <div id="selected-tenants" class="selected-tenants"></div>
 
         <input type="hidden" id="tenant" name="tenant">
 
@@ -156,6 +155,7 @@ $last_directory = basename($current_directory);
     </form>
     <div id="notification" class="notification"></div>
 </div>
+
 
 <script>
 $(document).ready(function() {

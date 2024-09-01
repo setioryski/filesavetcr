@@ -120,7 +120,6 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
 ?>
 
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -214,9 +213,42 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
             text-overflow: clip;
         }
 
+        /* Styles for the navbar */
+        nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        nav a {
+            float: left;
+            display: block;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        nav a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
     </style>
 </head>
 <body>
+    <!-- Navigation bar -->
+    <nav>
+        <a href="index.php" class="active">Home</a>
+        <a href="submit.php">Submit</a>
+        <a href="admin/index.php">Admin</a>
+        <a href="logout.php" class="logout-button" style="float: right; padding: 5px 10px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
+    </nav>
+
     <div class="file-manager">
         <div class="file-manager-container">
             <div class="file-manager-header">

@@ -1,77 +1,71 @@
-/* stylelogin.css */
-
-body {
-    background-color: #f2f2f7;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+html, body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-container {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 h1 {
-    font-size: 2em;
-    color: #1c1c1e;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-form {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333333;
 }
 
 label {
+    font-size: 16px;
+    color: #666666;
     display: block;
-    font-size: 1em;
-    color: #1c1c1e;
-    margin-bottom: 10px;
+    text-align: left;
+    margin-bottom: 5px;
+    margin-top: 20px;
 }
 
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 10px 15px;
+    padding: 12px 15px;
+    margin-top: 8px;
     border-radius: 10px;
-    border: 1px solid #d1d1d6;
-    background-color: #f2f2f7;
-    font-size: 1em;
-    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+    font-size: 16px;
     box-sizing: border-box;
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus {
-    border-color: #007aff;
-    background-color: #ffffff;
-    outline: none;
 }
 
 button {
     width: 100%;
-    padding: 15px;
-    background-color: #007aff;
+    padding: 12px;
+    margin-top: 30px;
     border: none;
     border-radius: 10px;
-    color: #ffffff;
-    font-size: 1em;
+    background-color: #007aff;
+    color: white;
+    font-size: 18px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #005fcb;
+    background-color: #005bb5;
 }
 
 p {
-    text-align: center;
-    color: #ff3b30;
-    margin-top: -10px;
-    margin-bottom: 20px;
+    margin-top: 20px;
+    color: red;
+    font-size: 14px;
 }

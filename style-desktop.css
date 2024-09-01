@@ -20,12 +20,47 @@ html {
     margin: 0 auto;
     margin-top: 30px;
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    padding: 0 15px; /* Added padding to match form padding */
 }
 
+/* Header */
+.file-manager-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0; /* Removed extra padding */
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd; /* Added border to match table */
+}
+
+.file-manager-header h1 {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    color: #7f828a;
+    margin: 0; /* Ensures no extra margin */
+}
+
+.file-manager-header a {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50px;
+    color: #7f828a;
+    text-decoration: none;
+}
+
+.file-manager-header a:hover {
+    background-color: #2e76cf;
+}
+
+/* Form */
 .file-manager form {
     display: flex;
     flex-flow: column;
-    padding: 15px;
+    padding: 15px 0; /* Adjusted padding to be consistent with header and table */
 }
 
 .file-manager form label {
@@ -54,41 +89,11 @@ html {
     background-color: #4672a9;
 }
 
-/* Header */
-.file-manager-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    background-color: #f1f1f1;
-}
-
-.file-manager-header h1 {
-    flex: 1;
-    font-size: 18px;
-    font-weight: 600;
-    color: #7f828a;
-}
-
-.file-manager-header a {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50px;
-    color: #7f828a;
-    text-decoration: none;
-}
-
-.file-manager-header a:hover {
-    background-color: #2e76cf;
-}
-
 /* Table */
 .file-manager-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 15px; /* Ensures some space between form and table */
 }
 
 .file-manager-table th, .file-manager-table td {
@@ -285,4 +290,11 @@ html {
     overflow: visible;
     text-overflow: clip;
     word-wrap: break-word;
+}
+
+/* Additional Media Query for small screens */
+@media (max-width: 768px) {
+    .file-manager {
+        padding: 0 10px; /* Adjust padding for smaller screens */
+    }
 }
