@@ -244,7 +244,7 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
     <!-- Navigation bar -->
     <nav>
         <a href="index.php" class="active">Home</a>
-        <a href="submit.php">Submit</a>
+        <a href="upload.php">Submit</a>
         <a href="admin/index.php">Admin</a>
         <a href="logout.php" class="logout-button" style="float: right; padding: 5px 10px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
     </nav>

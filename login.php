@@ -7,7 +7,7 @@ if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role_id'] == 1) {
         header("Location: admin/index.php");
     } elseif ($_SESSION['role_id'] == 2) {
-        header("Location: submit.php");
+        header("Location: upload.php");
     }
     exit();
 }
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($role_id == 1) {
                     header("Location: admin/index.php");
                 } elseif ($role_id == 2) {
-                    header("Location: submit.php");
+                    header("Location: upload.php");
                 }
                 exit();
             } else {

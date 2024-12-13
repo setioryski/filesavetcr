@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "";  // NULL password, typically used for localhost without a password
-$dbname = "blog";
+$password = "aejot1234";  // NULL password, typically used for localhost without a password
+$dbname = "crudimg";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

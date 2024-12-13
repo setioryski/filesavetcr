@@ -138,192 +138,10 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
     <title>File Upload</title>
     <!-- Link to external CSS if needed -->
     <link href="styleupload.css" rel="stylesheet" type="text/css">
+    <link href="style-mobile.css" rel="stylesheet" type="text/css">
     <!-- jQuery CDN -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <!-- Inline CSS for demonstration purposes -->
-    <style>
-        /* Image Preview Container Styles */
-        .image-preview-container {
-            display: flex;
-            flex-direction: row;
-            overflow-x: auto;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-        }
-
-        .image-preview-container::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .image-preview-container::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 4px;
-        }
-
-        .image-preview-container img {
-            max-height: 150px;
-            margin-right: 10px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            padding: 5px;
-            background-color: #fff;
-            flex-shrink: 0;
-        }
-
-        /* Additional Styles for Better Presentation */
-        .upload-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-
-        .welcome-message {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .logout-button, .back-button, .add-image-button {
-            text-decoration: none;
-            padding: 8px 12px;
-            background-color: #007BFF;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-            margin-left: 5px;
-        }
-
-        .logout-button:hover, .back-button:hover, .add-image-button:hover {
-            background-color: #0056b3;
-        }
-
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="date"], #tenant-search {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        .tenant-search {
-            position: relative;
-        }
-
-        .tenant-list {
-            position: absolute;
-            top: 38px;
-            left: 0;
-            right: 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-
-        .tenant-list li {
-            padding: 8px;
-            cursor: pointer;
-        }
-
-        .tenant-list li:hover {
-            background-color: #f0f0f0;
-        }
-
-        .selected-tenants div {
-            display: inline-block;
-            background-color: #e0e0e0;
-            padding: 5px 10px;
-            margin: 5px 5px 0 0;
-            border-radius: 15px;
-        }
-
-        .remove-tenant {
-            margin-left: 8px;
-            color: #ff3b30;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .notification {
-            margin-top: 20px;
-            padding: 10px;
-            display: none;
-            border-radius: 4px;
-        }
-
-        .notification.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .notification.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Progress Bar Styles */
-        #progress-bar-container {
-            width: 100%;
-            background-color: #f3f3f3;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .individual-progress-bar-container {
-            margin-top: 10px;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 20px;
-            background-color: #4caf50;
-            text-align: center;
-            color: white;
-            line-height: 20px;
-            border-radius: 4px;
-            transition: width 0.4s ease;
-        }
-
-        /* Loading Indicator */
-        #loading.hidden {
-            display: none;
-        }
-
-        #loading {
-            display: none;
-            margin-top: 10px;
-        }
-
-        /* Add Image Button Styles */
-        .add-image-button {
-            margin-top: 10px;
-            background-color: #28a745;
-        }
-
-        .add-image-button:hover {
-            background-color: #218838;
-        }
-
-        /* Optional: Style for the tenant list when visible */
-        .tenant-list.visible {
-            display: block;
-        }
-    </style>
 </head>
 <body>
 <div class="upload-container">
@@ -337,12 +155,12 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
     <h1>Upload Files to <?= htmlspecialchars($last_directory) ?></h1>
     <form id="uploadForm" method="post" enctype="multipart/form-data">
         <label for="fileToUpload">Take pictures to upload:</label>
-        <!-- Hidden File Input (required attribute removed) -->
+        <!-- Hidden File Input (required removed) -->
         <input type="file" name="files[]" id="fileToUpload" accept="image/*" capture="camera" multiple style="display: none;">
-        
+
         <!-- Add Image Button -->
         <button type="button" class="add-image-button" id="addImageButton">Add Image</button>
-        
+
         <!-- Image Preview Container -->
         <div id="image-preview-container" class="image-preview-container" style="display: none; margin-top: 10px;">
             <!-- Multiple image previews will be appended here -->
@@ -545,14 +363,14 @@ $(document).ready(function() {
 
         console.log("Form Values:", { date: date, name: name, tenant: tenant });  // Debugging
 
-        // Additional Validation: Ensure at least one file is selected
-        if (selectedFiles.length === 0) {
-            alert("Please add at least one image to upload.");
+        // Custom validation
+        if (!date || !name || !tenant) {
+            alert("Please fill out all fields.");
             return;
         }
 
-        if (!date || !name || !tenant) {
-            alert("Please fill out all fields.");
+        if (selectedFiles.length === 0) {
+            alert("Please add at least one image to upload.");
             return;
         }
 
@@ -562,7 +380,7 @@ $(document).ready(function() {
         formData.append('name', name);
         formData.append('tenant', tenant);
 
-        selectedFiles.forEach(function(file) {
+        selectedFiles.forEach(function(file, index) {
             // Sanitize filenames to prevent security issues
             var sanitized_name = name.replace(/[^a-zA-Z0-9_-]/g, '');
             var sanitized_tenant = tenant.replace(/[^a-zA-Z0-9_-]/g, '');
