@@ -73,7 +73,7 @@ include 'auth.php'; // Include authentication check
             <li><a href="tenants.php">Manage Tenants</a></li>
             <li><a href="users.php">Manage Users</a></li>
             <li><a href="../index.php">Filesave Page</a></li> <!-- Link to root index.php -->
-            <li><a href="../submit.php">Submit Page</a></li> <!-- Link to submit.php -->
+            <li><a href="../upload.php">Submit Page</a></li> <!-- Link to submit.php -->
         </ul>
     </div>
 </body>

@@ -2,20 +2,20 @@
 // upload.php
 
 session_start();
-require 'db.php';  // Include your database connection
+require 'db.php';  // Sertakan koneksi database Anda
 
-// Enable error reporting for debugging (disable in production)
+// Aktifkan pelaporan kesalahan untuk debugging (nonaktifkan di produksi)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Authentication check
+// Cek autentikasi
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
-// Fetch the username from the database using the user_id stored in the session
+// Ambil username dari database menggunakan user_id yang disimpan di session
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT username FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
@@ -25,87 +25,92 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 if (!$user) {
-    die("Error: User not found.");
+    die("Error: User tidak ditemukan.");
 }
 
-$username = $user['username'];  // Username of the person submitting the file
+$username = $user['username'];  // Username dari orang yang mengunggah file
 
-// Handle file uploads for POST requests
+// Tangani unggahan file untuk permintaan POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
     $initial_directory = 'Uploads/DPX_IMAGE/';
 
-    // Get the submitted date
+    // Ambil tanggal yang dikirimkan
     $date = isset($_POST['date']) ? trim($_POST['date']) : '';
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
-    $tenant = isset($_POST['tenant']) ? trim($_POST['tenant']) : '';
+    $tenant = isset($_POST['tenant']) ? trim($_POST['tenant']) : '';  // Pilihan tenant tunggal
 
-    // Debugging: Log the values of date, name, tenant, and username
+    // Debugging: Log nilai tanggal, nama, tenant, dan username
     error_log("DEBUG: Date = $date, Name = $name, Tenant = $tenant, Username = $username");
 
     $response = array('success' => false, 'messages' => array());
 
     if (empty($date) || empty($name) || empty($tenant)) {
-        $response['messages'][] = "Error: Date, Name, or Tenant is missing.";
+        $response['messages'][] = "Error: Tanggal, Nama, atau Tenant tidak diisi.";
     } else {
-        // Parse the date to determine the correct folder
-        $date_components = explode('-', $date);
-        if (count($date_components) != 3) {
-            $response['messages'][] = "Error: Invalid date format.";
+        // Cek apakah setidaknya 4 file diunggah
+        if (count($_FILES['files']['name']) < 4) {
+            $response['messages'][] = "Error: Anda harus mengunggah setidaknya 4 gambar.";
         } else {
-            list($upload_year, $upload_month_num, $upload_day) = $date_components;
-            // Convert month number to "MM_MonthName"
-            $monthName = date('F', mktime(0, 0, 0, $upload_month_num, 10)); // March, April, etc.
-            $upload_month = sprintf('%02d', $upload_month_num) . '_' . $monthName;
+            // Parse tanggal untuk menentukan folder yang benar
+            $date_components = explode('-', $date);
+            if (count($date_components) != 3) {
+                $response['messages'][] = "Error: Format tanggal tidak valid.";
+            } else {
+                list($upload_year, $upload_month_num, $upload_day) = $date_components;
+                // Konversi nomor bulan ke "MM_NamaBulan"
+                $monthName = date('F', mktime(0, 0, 0, $upload_month_num, 10)); // Januari, Februari, dst.
+                $upload_month = sprintf('%02d', $upload_month_num) . '_' . $monthName;
 
-            // Adjust the directory path based on the selected date
-            $upload_directory = $initial_directory . "$upload_year/$upload_month/" . sprintf('%02d', $upload_day) . "/";
+                // Sesuaikan path direktori berdasarkan tanggal yang dipilih
+                $upload_directory = $initial_directory . "$upload_year/$upload_month/" . sprintf('%02d', $upload_day) . "/";
 
-            // Create the directory if it doesn't exist
-            if (!file_exists($upload_directory)) {
-                mkdir($upload_directory, 0755, true);
-            }
-
-            $files = $_FILES['files'];
-            $total_files = count($files['name']);
-
-            for ($i = 0; $i < $total_files; $i++) {
-                // Check for upload errors
-                if ($files['error'][$i] !== UPLOAD_ERR_OK) {
-                    $response['messages'][] = "Error uploading file " . htmlspecialchars($files['name'][$i]) . ". Error code: " . $files['error'][$i];
-                    continue;
+                // Buat direktori jika belum ada
+                if (!file_exists($upload_directory)) {
+                    mkdir($upload_directory, 0755, true);
                 }
 
-                // Validate file type
-                $fileType = mime_content_type($files['tmp_name'][$i]);
-                if (strpos($fileType, 'image/') !== 0) {
-                    $response['messages'][] = "File " . htmlspecialchars($files['name'][$i]) . " is not a valid image.";
-                    continue;
-                }
+                $files = $_FILES['files'];
+                $total_files = count($files['name']);
 
-                $fileExtension = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
-                $sanitized_name = preg_replace("/[^a-zA-Z0-9_-]/", "", $name);
-                $sanitized_tenant = preg_replace("/[^a-zA-Z0-9_-]/", "", $tenant);
-                $sanitized_username = preg_replace("/[^a-zA-Z0-9_-]/", "", $username);
-                $filename = "$date-$sanitized_name-$sanitized_tenant-$sanitized_username.$fileExtension";
-                $targetFile = rtrim($upload_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+                for ($i = 0; $i < $total_files; $i++) {
+                    // Cek error unggahan
+                    if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                        $response['messages'][] = "Error mengunggah file " . htmlspecialchars($files['name'][$i]) . ". Kode error: " . $files['error'][$i];
+                        continue;
+                    }
 
-                // Prevent overwriting existing files by appending a unique identifier if necessary
-                $unique_id = 1;
-                $base_filename = pathinfo($filename, PATHINFO_FILENAME);
-                while (file_exists($targetFile)) {
-                    $filename = "{$base_filename}_{$unique_id}.$fileExtension";
+                    // Validasi tipe file
+                    $fileType = mime_content_type($files['tmp_name'][$i]);
+                    if (strpos($fileType, 'image/') !== 0) {
+                        $response['messages'][] = "File " . htmlspecialchars($files['name'][$i]) . " bukan file gambar yang valid.";
+                        continue;
+                    }
+
+                    $fileExtension = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
+                    $sanitized_name = preg_replace("/[^a-zA-Z0-9_-]/", "", $name);
+                    $sanitized_tenant = preg_replace("/[^a-zA-Z0-9_-]/", "", $tenant);
+                    $sanitized_username = preg_replace("/[^a-zA-Z0-9_-]/", "", $username);
+                    $filename = "$date-$sanitized_name-$sanitized_tenant-$sanitized_username.$fileExtension";
                     $targetFile = rtrim($upload_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
-                    $unique_id++;
-                }
 
-                if (move_uploaded_file($files['tmp_name'][$i], $targetFile)) {
-                    $response['messages'][] = "The file " . htmlspecialchars($filename) . " has been uploaded.";
-                } else {
-                    $response['messages'][] = "Sorry, there was an error uploading " . htmlspecialchars($files['name'][$i]) . ".";
-                    $response['messages'][] = "Error code: " . $files['error'][$i];
+                    // Cegah penimpaan file yang sudah ada dengan menambahkan identifier unik jika perlu
+                    $unique_id = 1;
+                    $base_filename = pathinfo($filename, PATHINFO_FILENAME);
+                    while (file_exists($targetFile)) {
+                        $filename = "{$base_filename}_{$unique_id}.$fileExtension";
+                        $targetFile = rtrim($upload_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+                        $unique_id++;
+                    }
+
+                    if (move_uploaded_file($files['tmp_name'][$i], $targetFile)) {
+                        $response['messages'][] = "File " . htmlspecialchars($filename) . " telah berhasil diunggah.";
+                    } else {
+                        $response['messages'][] = "Maaf, terjadi kesalahan saat mengunggah " . htmlspecialchars($files['name'][$i]) . ".";
+                        $response['messages'][] = "Kode error: " . $files['error'][$i];
+                    }
                 }
+                $response['success'] = true;
             }
-            $response['success'] = true;
         }
     }
 
@@ -114,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
     exit;
 }
 
-// If GET request, render the form
-// Determine the current date's folder for the "Back to Directory" button
+// Jika permintaan GET, tampilkan form
+// Tentukan folder tanggal saat ini untuk tombol "Kembali ke Direktori"
 $current_year = date('Y');
 $current_month_num = date('m');
 $current_day = date('d');
@@ -123,7 +128,7 @@ $current_month_name = date('F', mktime(0, 0, 0, $current_month_num, 10));
 $current_month = sprintf('%02d', $current_month_num) . '_' . $current_month_name;
 $current_directory = 'Uploads/DPX_IMAGE/' . "$current_year/$current_month/" . sprintf('%02d', $current_day) . "/";
 
-// Ensure the current directory exists
+// Pastikan direktori saat ini ada
 if (!file_exists($current_directory)) {
     mkdir($current_directory, 0755, true);
 }
@@ -131,32 +136,43 @@ if (!file_exists($current_directory)) {
 $last_directory = basename(rtrim($current_directory, '/\\'));
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
-    <!-- Link to external CSS if needed -->
+    <title>Upload File</title>
+    <!-- Link ke CSS eksternal -->
     <link href="styleupload.css" rel="stylesheet" type="text/css">
     <link href="style-mobile.css" rel="stylesheet" type="text/css">
     <!-- jQuery CDN -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
+    <!-- Compressor.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.1.1/dist/compressor.min.js"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
 <div class="upload-container">
-    <div class="welcome-message">
-        <span>Welcome, <?= htmlspecialchars($username); ?></span>
-        <div>
-            <a href="logout.php" class="logout-button">Logout</a>
-            <a href="index.php?file=<?= urlencode($current_directory) ?>" class="back-button">← Back to Directory</a>
-        </div>
+<div class="welcome-message">
+    <span>Welcome, <?= htmlspecialchars($username); ?></span>
+    <div>
+        <!-- Logout Button dengan Ikon -->
+        <a href="logout.php" class="logout-button" aria-label="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+        <!-- Back Button dengan Ikon -->
+        <a href="index.php?file=<?= urlencode($current_directory) ?>" class="back-button" aria-label="Back to Directory">
+            <i class="fas fa-arrow-left"></i>
+        </a>
     </div>
+</div>
+
     <h1>Upload Files to <?= htmlspecialchars($last_directory) ?></h1>
     <form id="uploadForm" method="post" enctype="multipart/form-data">
         <label for="fileToUpload">Take pictures to upload:</label>
-        <!-- Hidden File Input (required removed) -->
-        <input type="file" name="files[]" id="fileToUpload" accept="image/*" capture="camera" multiple style="display: none;">
+        <!-- Hidden File Input -->
+        <input type="file" name="files[]" id="fileToUpload" accept="image/jpeg" capture="camera" multiple style="display: none;">
 
         <!-- Add Image Button -->
         <button type="button" class="add-image-button" id="addImageButton">Add Image</button>
@@ -172,14 +188,12 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
         <label for="name">Customer Name:</label>
         <input type="text" id="name" name="name" required>
 
-        <label for="tenant-search">Tenant:</label>
-        <div class="tenant-search">
-            <input type="text" id="tenant-search" placeholder="Search tenants...">
-            <div class="tenant-list" id="tenant-list"></div>
-        </div>
-        <div id="selected-tenants" class="selected-tenants"></div>
-
-        <input type="hidden" id="tenant" name="tenant">
+        <!-- Tenant Selection: Single Dropdown -->
+        <label for="tenant">Tenant:</label>
+        <select id="tenant" name="tenant" required>
+            <option value="">Select a tenant</option>
+            <!-- Options will be populated via JavaScript -->
+        </select>
 
         <input type="submit" value="Submit Photos" name="submit">
     </form>
@@ -192,110 +206,104 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
 
 <script>
 $(document).ready(function() {
-    var selectedTenants = [];
-    var selectedFiles = []; // Array to hold all selected files
-    var MAX_FILES = 20; // Maximum number of files allowed
+    // Variabel
+    var selectedFiles = []; // Array untuk menyimpan semua file yang dipilih
+    var MAX_FILES = 20; // Maksimum jumlah file yang diizinkan
     var MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
-    var username = '<?= htmlspecialchars($username); ?>'; // Fetch username from PHP
+    var username = '<?= htmlspecialchars($username); ?>'; // Mengambil username dari PHP
     var year = new Date().getFullYear();
 
-    // Fetch all tenants initially
-    fetchTenants('');
-
-    // Listen for input in the search box
-    $('#tenant-search').on('keyup', function() {
-        var query = $(this).val();
-        if(query.length > 0){
-            fetchTenants(query);
-        } else {
-            $('#tenant-list').hide();
-        }
-    });
-
-    // Function to fetch tenants from the server
-    function fetchTenants(query) {
+    // Fungsi untuk mengisi dropdown tenant
+    function populateTenants() {
         $.ajax({
             url: 'fetch_tenants.php',
             method: 'GET',
-            data: { query: query },
             dataType: 'json',
             success: function(response) {
-                var tenantList = $('#tenant-list');
-                tenantList.empty();
-
+                var tenantSelect = $('#tenant');
+                tenantSelect.empty();
+                tenantSelect.append('<option value="">Select a tenant</option>');
                 if (response.length > 0) {
                     response.forEach(function(tenant) {
-                        tenantList.append('<li data-name="' + tenant.name + '">' + tenant.name + '</li>');
+                        tenantSelect.append('<option value="' + tenant.name + '">' + tenant.name + '</option>');
                     });
                 } else {
-                    tenantList.append('<li>No results found</li>');
+                    tenantSelect.append('<option value="">No tenants available</option>');
                 }
-                tenantList.show();
             },
             error: function() {
                 console.error('Error fetching tenants.');
+                var tenantSelect = $('#tenant');
+                tenantSelect.empty();
+                tenantSelect.append('<option value="">Error loading tenants</option>');
             }
         });
     }
 
-    // Hide tenant list when clicking outside
-    $(document).on('click', function(event) {
-        if (!$(event.target).closest('.tenant-search').length) {
-            $('#tenant-list').hide();
-        }
-    });
+    // Panggil populateTenants saat halaman dimuat
+    populateTenants();
 
-    // Handle tenant selection from the list
-    $(document).on('click', '#tenant-list li', function() {
-        var tenantName = $(this).data('name');
-
-        if (!selectedTenants.includes(tenantName)) {
-            selectedTenants.push(tenantName);
-            $('#selected-tenants').append('<div data-name="' + tenantName + '">' + tenantName + ' <span class="remove-tenant">&times;</span></div>');
-            updateTenantInput();
-        }
-
-        $('#tenant-list').hide();
-        $('#tenant-search').val('');
-    });
-
-    // Handle tenant removal from the selected list
-    $(document).on('click', '.remove-tenant', function() {
-        var tenantDiv = $(this).parent();
-        var tenantName = tenantDiv.data('name');
-
-        selectedTenants = selectedTenants.filter(function(name) {
-            return name !== tenantName;
-        });
-
-        tenantDiv.remove();
-        updateTenantInput();
-    });
-
-    // Update the hidden input with selected tenant names separated by underscores
-    function updateTenantInput() {
-        $('#tenant').val(selectedTenants.join('_'));
+    // Fungsi untuk mengatur tanggal hari ini
+    function setTodayDate() {
+        var today = new Date().toISOString().split('T')[0];
+        $('#date').val(today);
     }
 
-    // Set the date input to today's date and make it read-only
-    var today = new Date().toISOString().split('T')[0];
-    $('#date').val(today);
+    // Atur tanggal hari ini saat halaman dimuat
+    setTodayDate();
 
-    // Image Preview Functionality for Multiple Images
+    // Fungsi untuk menampilkan notifikasi
+    function showNotification(message, type) {
+        var notification = $('#notification');
+        if (type === "success") {
+            notification.removeClass('error').addClass('success');
+        } else if (type === "error") {
+            notification.removeClass('success').addClass('error');
+        }
+        notification.html(message).slideDown();
+        setTimeout(function() {
+            notification.slideUp(); // Sembunyikan notifikasi setelah 5 detik
+        }, 5000);
+    }
+
+    // Fungsi untuk memperbarui preview gambar dengan indikator loading
     function updatePreviews() {
         var previewContainer = $('#image-preview-container');
-        previewContainer.empty(); // Clear existing previews
+        previewContainer.empty(); // Bersihkan preview yang ada
 
         if (selectedFiles.length > 0) {
             selectedFiles.forEach(function(file, index) {
+                var imgWrapper = $('<div class="img-wrapper"></div>');
+                var spinner = $('<div class="spinner"></div>'); // Spinner loading
+                imgWrapper.append(spinner);
+                previewContainer.append(imgWrapper);
+
                 var reader = new FileReader();
 
                 reader.onload = function(e) {
-                    var imgWrapper = $('<div class="img-wrapper" style="position: relative;"></div>');
-                    var img = $('<img>').attr('src', e.target.result).attr('alt', 'Image Preview');
-                    var removeBtn = $('<span class="remove-img" style="position: absolute; top: 5px; right: 5px; background-color: rgba(255,255,255,0.7); color: #ff3b30; border-radius: 50%; padding: 2px 6px; cursor: pointer;">&times;</span>');
+                    var img = $('<img>')
+                        .attr('src', e.target.result)
+                        .attr('alt', 'Image Preview')
+                        .css({
+                            'width': '100px',
+                            'height': '100px',
+                            'object-fit': 'cover',
+                            'border': '1px solid #ccc',
+                            'border-radius': '4px'
+                        })
+                        .on('error', function() {
+                            imgWrapper.find('.spinner').remove(); // Hapus spinner
+                            showNotification("Gagal memuat preview untuk " + file.name, "error");
+                        });
+
+                    var removeBtn = $('<span class="remove-img">&times;</span>');
                     imgWrapper.append(img).append(removeBtn);
-                    previewContainer.append(imgWrapper);
+                    imgWrapper.find('.spinner').remove(); // Hapus spinner setelah gambar dimuat
+                }
+
+                reader.onerror = function() {
+                    imgWrapper.find('.spinner').remove(); // Hapus spinner
+                    showNotification("Error membaca file " + file.name, "error");
                 }
 
                 reader.readAsDataURL(file);
@@ -306,99 +314,114 @@ $(document).ready(function() {
         }
     }
 
-    // Handle Add Image Button Click
+    // Handle klik tombol Add Image
     $('#addImageButton').on('click', function() {
-        $('#fileToUpload').click(); // Trigger the hidden file input
+        $('#fileToUpload').click(); // Trigger input file tersembunyi
     });
 
-    // Handle file input change event
+    // Fungsi untuk mengompres gambar menggunakan Compressor.js dengan kualitas minimal loss
+    function compressImage(file, maxSizeKB, callback) {
+        new Compressor(file, {
+            quality: 0.95, // Tingkat kualitas tinggi
+            maxWidth: 1920, // Maksimal lebar (sesuaikan dengan kebutuhan)
+            maxHeight: 1080, // Maksimal tinggi (sesuaikan dengan kebutuhan)
+            convertSize: maxSizeKB * 1024, // Mengonversi hanya jika ukuran lebih besar dari maxSizeKB
+            success(result) {
+                callback(result);
+            },
+            error(err) {
+                console.error('Compression error:', err.message);
+                callback(file); // Kembalikan file asli jika kompresi gagal
+            },
+        });
+    }
+
+    // Handle perubahan input file dengan kompresi wajib
     $("#fileToUpload").on('change', function() {
         var files = this.files;
         if (files.length > 0) {
-            // Check if adding these files exceeds the maximum limit
+            // Cek apakah menambahkan file ini melebihi batas maksimum
             if (selectedFiles.length + files.length > MAX_FILES) {
-                alert("You can upload a maximum of " + MAX_FILES + " images.");
+                showNotification("Anda dapat mengunggah maksimum " + MAX_FILES + " gambar.", "error");
                 return;
             }
 
             Array.from(files).forEach(function(file) {
-                // Validate file type
-                if (!file.type.startsWith('image/')) {
-                    alert(file.name + " is not an image file.");
+                // Validasi tipe file
+                if (!file.type.startsWith('image/jpeg')) {
+                    showNotification(file.name + " bukan file JPEG yang valid.", "error");
                     return;
                 }
 
-                // Validate file size
+                // Validasi ukuran file
                 if (file.size > MAX_FILE_SIZE) {
-                    alert(file.name + " exceeds the 5MB size limit.");
+                    showNotification(file.name + " melebihi batas ukuran 5MB.", "error");
                     return;
                 }
 
-                // Check if file already exists in selectedFiles
-                var exists = selectedFiles.some(function(f) {
-                    return f.name === file.name && f.size === file.size && f.lastModified === file.lastModified;
+                // Kompresi gambar dengan Compressor.js
+                compressImage(file, 50, function(compressedFile) {
+                    // Cek apakah file sudah ada dalam selectedFiles
+                    var exists = selectedFiles.some(function(f) {
+                        return f.name === compressedFile.name && f.size === compressedFile.size && f.lastModified === compressedFile.lastModified;
+                    });
+                    if (!exists) {
+                        selectedFiles.push(compressedFile);
+                        updatePreviews();
+                    }
                 });
-                if (!exists) {
-                    selectedFiles.push(file);
-                }
             });
 
-            // Update the previews based on selectedFiles
-            updatePreviews();
-
-            // Reset the file input value to allow selecting the same file again if needed
+            // Reset nilai input file untuk memungkinkan memilih file yang sama lagi jika diperlukan
             $(this).val('');
         }
     });
 
-    // Handle form submission for file upload
+    // Handle pengiriman form untuk unggah file
     $('#uploadForm').on('submit', function(e) {
-        e.preventDefault();  // Prevent the default form submission
-        console.log("Submit button clicked");  // Debugging statement
+        e.preventDefault();  // Mencegah pengiriman form default
+        console.log("Tombol Submit diklik");  // Debugging
 
-        // Capture form field values immediately
+        // Tangkap nilai field form segera
         var date = $('#date').val();
         var name = $('#name').val();
         var tenant = $('#tenant').val();
 
-        console.log("Form Values:", { date: date, name: name, tenant: tenant });  // Debugging
+        console.log("Nilai Form:", { date: date, name: name, tenant: tenant });  // Debugging
 
-        // Custom validation
+        // Validasi kustom
         if (!date || !name || !tenant) {
-            alert("Please fill out all fields.");
+            showNotification("Harap isi semua bidang.", "error");
             return;
         }
 
-        if (selectedFiles.length === 0) {
-            alert("Please add at least one image to upload.");
+        if (selectedFiles.length < 4) {  // Minimum 4 gambar
+            // Tampilkan notifikasi alih-alih alert
+            showNotification("Harap tambahkan setidaknya 4 gambar untuk diunggah.", "error");
             return;
         }
 
-        // Create a FormData object
+        // Buat objek FormData
         var formData = new FormData();
         formData.append('date', date);
         formData.append('name', name);
-        formData.append('tenant', tenant);
+        formData.append('tenant', tenant);  // Tenant tunggal
 
         selectedFiles.forEach(function(file, index) {
-            // Sanitize filenames to prevent security issues
+            // Sanitasi nama file untuk mencegah masalah keamanan
             var sanitized_name = name.replace(/[^a-zA-Z0-9_-]/g, '');
             var sanitized_tenant = tenant.replace(/[^a-zA-Z0-9_-]/g, '');
             var sanitized_username = username.replace(/[^a-zA-Z0-9_-]/g, '');
             var fileExtension = file.name.split('.').pop();
-            var newFilename = `${date}-${sanitized_name}-${sanitized_tenant}-${sanitized_username}.${fileExtension}`;
+            var baseName = file.name.split('.').slice(0, -1).join('.');
+            var newFilename = `${date}-${sanitized_name}-${sanitized_tenant}-${sanitized_username}-${index + 1}.${fileExtension}`;
             
-            var renamedFile = new File([file], newFilename, {
-                type: file.type,
-                lastModified: Date.now(),
-            });
-            
-            formData.append('files[]', renamedFile);
+            formData.append('files[]', file, newFilename);
         });
 
-        console.log("FormData Prepared");  // Debugging
+        console.log("FormData Disiapkan");  // Debugging
 
-        // AJAX request to upload.php
+        // AJAX request ke upload.php
         $.ajax({
             url: 'upload.php',
             type: 'POST',
@@ -420,23 +443,26 @@ $(document).ready(function() {
                 $('#progress-bar-container').removeClass('hidden');
                 $('#progress-bar').css('width', '0%').text('0%');
                 $('#notification').hide();
-                console.log("AJAX Request Sent");  // Debugging
+                console.log("AJAX Request Dikirim");  // Debugging
             },
             success: function(response) {
                 console.log("AJAX Success:", response);  // Debugging
                 $('#loading').addClass('hidden');
                 var notification = $('#notification');
                 if (response.success) {
-                    notification.removeClass('error').addClass('success').html(response.messages.join("<br>")).slideDown();
-                    // Reset the form and selectedFiles
+                    showNotification(response.messages.join("<br>"), "success");
+                    // Reset form dan selectedFiles
                     $('#uploadForm')[0].reset();
+                    setTodayDate(); // Otomatis mengisi tanggal setelah reset
                     selectedFiles = [];
                     $('#image-preview-container').empty().hide();
+                    // Re-populate tenants jika daftar telah berubah
+                    populateTenants();
                 } else {
-                    notification.removeClass('success').addClass('error').html(response.messages.join("<br>")).slideDown();
+                    showNotification(response.messages.join("<br>"), "error");
                 }
                 setTimeout(function() {
-                    notification.slideUp(); // Hide the notification after 5 seconds
+                    notification.slideUp(); // Sembunyikan notifikasi setelah 5 detik
                     $('#progress-bar-container').hide();
                 }, 5000);
             },
@@ -444,19 +470,19 @@ $(document).ready(function() {
                 console.error("AJAX Error:", error);  // Debugging
                 $('#loading').addClass('hidden');
                 var notification = $('#notification');
-                notification.removeClass('success').addClass('error').html('An error occurred: ' + error).slideDown();
+                showNotification('Terjadi kesalahan: ' + error, "error");
                 setTimeout(function() {
-                    notification.slideUp(); // Hide after 5 seconds
+                    notification.slideUp(); // Sembunyikan setelah 5 detik
                     $('#progress-bar-container').hide();
                 }, 5000);
             }
         });
     });
 
-    // Handle image removal before upload
+    // Handle penghapusan gambar sebelum diunggah
     $(document).on('click', '.remove-img', function() {
         var index = $(this).parent().index();
-        console.log("Removing image at index:", index);  // Debugging
+        console.log("Menghapus gambar pada index:", index);  // Debugging
         selectedFiles.splice(index, 1);
         $(this).parent().remove();
         if (selectedFiles.length === 0) {
