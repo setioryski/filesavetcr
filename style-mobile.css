@@ -1,3 +1,4 @@
+/* Base Styles */
 * {
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
@@ -34,7 +35,7 @@ body {
     border-bottom: 1px solid #ddd;
 }
 
-.file-manager-header.breadcrump {
+.file-manager-header.breadcrumb {
     font-size: 14px;
     color: #7f828a;
     font-weight: 500;
@@ -178,13 +179,14 @@ body {
     background: #a94646;
 }
 
-/* Hide size and modified columns */
+/* Hide "Size" and "Modified" columns on Mobile by Default */
+/* Initially, hide "Size" and "Modified" as per original code */
 .file-manager-table th:nth-child(2), .file-manager-table th:nth-child(3),
 .file-manager-table td:nth-child(2), .file-manager-table td:nth-child(3) {
     display: none;
 }
 
-/* Responsive Adjustments */
+/* Responsive Adjustments for Mobile */
 @media (max-width: 600px) {
     html, body {
         padding: 10px;
@@ -200,7 +202,7 @@ body {
         align-items: flex-start;
     }
 
-    .file-manager-header .breadcrump {
+    .file-manager-header .breadcrumb {
         font-size: 16px;
         margin-bottom: 10px;
     }
@@ -231,16 +233,118 @@ body {
         padding: 10px;
     }
 
-    .file-manager-table tbody tr td.actions {
-        justify-content: flex-start;
-        gap: 5px;
+    /* Hide the "Uploaded" column (4th column) */
+    .file-manager-table th:nth-child(4),
+    .file-manager-table td:nth-child(4) {
+        display: none;
     }
 
+    /* Show "Name," "Modified," and "Actions" columns */
+    .file-manager-table th:nth-child(1),
+    .file-manager-table th:nth-child(3),
+    .file-manager-table th:nth-child(5),
+    .file-manager-table td:nth-child(1),
+    .file-manager-table td:nth-child(3),
+    .file-manager-table td:nth-child(5) {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Adjust "Actions" column to display buttons horizontally */
+    .file-manager-table tbody tr td.actions {
+        justify-content: flex-end; /* Align actions to the right */
+        gap: 5px; /* Space between buttons */
+    }
+
+    /* Ensure action buttons are small enough to fit within 359px */
     .file-manager-table tbody tr td.actions .btn {
-        padding: 8px;
+        padding: 6px;
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Optional: Reduce icon size for better fit */
+    .file-manager-table tbody tr td.actions .btn i {
+        font-size: 14px;
+    }
+
+    /* Media Query for 359px and below */
+    @media (max-width: 359px) {
+        /* Further reduce padding if necessary */
+        .file-manager-table th, .file-manager-table td {
+            padding: 8px;
+        }
+
+        /* Ensure "Name" and "Modified" columns don't overflow */
+        .file-manager-table tbody tr td.name,
+        .file-manager-table tbody tr td.date {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Ensure action buttons are still horizontally aligned and visible */
+        .file-manager-table tbody tr td.actions {
+            flex: 0 0 auto;
+            justify-content: flex-end;
+            gap: 3px; /* Reduce space between buttons */
+        }
+
+        /* Optional: Further reduce button size */
+        .file-manager-table tbody tr td.actions .btn {
+            padding: 4px;
+            width: 28px;
+            height: 28px;
+        }
+
+        /* Optional: Further reduce icon size */
+        .file-manager-table tbody tr td.actions .btn i {
+            font-size: 12px;
+        }
     }
 }
 
+/* Optional: Additional styles to improve responsiveness */
+
+.file-manager-table tbody tr td.actions {
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure that the "Actions" buttons don't wrap to the next line */
+.file-manager-table tbody tr td.actions .btn {
+    flex-shrink: 0;
+}
+
+/* Styles for breadcrumb */
+.breadcrumb {
+    padding: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.breadcrumb span {
+    font-weight: bold;
+}
+
+/* Styles for upload button */
+.upload-button {
+    float: right;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.upload-button:hover {
+    background-color: #45a049;
+}
+
+/* Styles for the message */
 .message {
     margin-top: 20px;
     padding: 10px;
@@ -253,4 +357,107 @@ body {
 
 .error {
     color: red;
+}
+
+/* Styles for the image modal */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    padding-top: 60px; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+}
+
+.modal-content, #caption {  
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {transform:scale(0)} 
+    to {transform:scale(1)}
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -50px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+}
+
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+
+#caption {
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: auto;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Additional Optional Styles */
+
+/* Ensure the breadcrumb does not wrap */
+.breadcrumb {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Adjust table layout on very small screens */
+@media (max-width: 359px) {
+    .file-manager-table {
+        table-layout: fixed;
+    }
+
+    .file-manager-table th, .file-manager-table td {
+        font-size: 14px;
+    }
 }
