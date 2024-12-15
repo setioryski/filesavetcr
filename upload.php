@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
                     $fileExtension = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
 
                     // Ganti spasi dengan garis bawah dalam nama pelanggan
-                    $namtomere_with_underscores = str_replace(' ', '_', $name);
+                    $name_with_underscores = str_replace(' ', '_', $name);
 
                     // Sanitasi nama pelanggan, tenant, dan username
                     $sanitized_name = preg_replace("/[^a-zA-Z0-9_-]/", "", $name_with_underscores);
@@ -246,11 +246,6 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
                 height: 80px;
             }
         }
-
-        /* Gaya untuk menyembunyikan label dan input tanggal */
-        .hidden-date {
-            display: none;
-        }
     </style>
 </head>
 
@@ -284,19 +279,16 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
             <!-- Pratinjau beberapa gambar akan ditambahkan di sini -->
         </div>
 
-        <!-- Kontainer yang Disembunyikan untuk Tanggal -->
-        <div class="hidden-date">
-            <label for="date">Pilih Tanggal:</label>
-            <input type="date" id="date" name="date" required readonly>
-        </div>
+        <label for="date">Pilih Tanggal:</label>
+        <input type="date" id="date" name="date" required readonly>
 
-        <label for="name">Catatan:</label>
+        <label for="name">Nama Pelanggan:</label>
         <input type="text" id="name" name="name" required>
 
         <!-- Pemilihan Tenant: Dropdown Tunggal -->
-        <label for="tenant">Kamar/Lokasi:</label>
+        <label for="tenant">Tenant:</label>
         <select id="tenant" name="tenant" required>
-            <option value="">Pilih Lokasi</option>
+            <option value="">Pilih tenant</option>
             <!-- Opsi akan diisi melalui JavaScript -->
         </select>
 
