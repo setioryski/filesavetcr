@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['files'])) {
                     $fileExtension = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
 
                     // Ganti spasi dengan garis bawah dalam nama pelanggan
-                    $name_with_underscores = str_replace(' ', '_', $name);
+                    $namtomere_with_underscores = str_replace(' ', '_', $name);
 
                     // Sanitasi nama pelanggan, tenant, dan username
                     $sanitized_name = preg_replace("/[^a-zA-Z0-9_-]/", "", $name_with_underscores);
@@ -290,13 +290,13 @@ $last_directory = basename(rtrim($current_directory, '/\\'));
             <input type="date" id="date" name="date" required readonly>
         </div>
 
-        <label for="name">Nama Pelanggan:</label>
+        <label for="name">Catatan:</label>
         <input type="text" id="name" name="name" required>
 
         <!-- Pemilihan Tenant: Dropdown Tunggal -->
-        <label for="tenant">Tenant:</label>
+        <label for="tenant">Kamar/Lokasi:</label>
         <select id="tenant" name="tenant" required>
-            <option value="">Pilih tenant</option>
+            <option value="">Pilih Lokasi</option>
             <!-- Opsi akan diisi melalui JavaScript -->
         </select>
 
