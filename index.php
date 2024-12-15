@@ -99,6 +99,37 @@ function get_filetype_icon($file) {
     }
 }
 
+// Function to calculate human-readable time difference
+function time_elapsed_string($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime("@$datetime");
+    $ago->setTimezone(new DateTimeZone(date_default_timezone_get()));
+    $diff = $now->diff($ago);
+
+    $diff->w = floor($diff->d / 7);
+    $diff->d -= $diff->w * 7;
+
+    $string = array(
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'minute',
+        's' => 'second',
+    );
+    foreach ($string as $k => &$v) {
+        if ($diff->$k) {
+            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+
 // Extract base and current folder names
 $base_folder = basename(realpath($initial_directory));
 $current_folder = basename(realpath($current_directory));
@@ -238,6 +269,75 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
             color: white;
         }
 
+        /* Styles for breadcrumb */
+        .breadcrumb {
+            padding: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .breadcrumb span {
+            font-weight: bold;
+        }
+
+        /* Styles for upload button */
+        .upload-button {
+            float: right;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .upload-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Styles for the table */
+        .file-manager-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .file-manager-table th, .file-manager-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .file-manager-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .file-manager-table th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        /* Styles for the message */
+        .message {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .message.hidden {
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
     </style>
 </head>
 <body>
@@ -267,40 +367,56 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
                     echo '<span>' . htmlspecialchars($basePath) . '</span> / ' . implode(' / ', $breadcrumb);
                     ?>
                 </div>
-                <a href="submit.php?directory=<?= urlencode($current_directory) ?>" class="upload-button"><i class="fa-solid fa-plus"></i></a>
+                
             </div>
 
             <table class="file-manager-table">
                 <thead>
                     <tr>
-                        <th class="selected-column">Name<i class="fa-solid fa-arrow-down-long fa-xs"></i></th>
+                        <th class="selected-column">Name <i class="fa-solid fa-arrow-down-long fa-xs"></i></th>
                         <th>Size</th>
                         <th>Modified</th>
+                        <th>Uploaded</th> <!-- New Column for Upload Time -->
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (isset($_GET['file']) && realpath($current_directory) != realpath($initial_directory)): ?>
                         <tr>
-    <td colspan="4" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode(dirname($_GET['file'])) ?>">...</a></td>
-</tr>
-<?php endif; ?>
-<?php foreach ($results as $result): ?>
-<tr class="file" data-file="<?= htmlspecialchars($result) ?>">
-    <td class="name" data-label="Name"><?= get_filetype_icon($result) ?><a class="view-file truncate" href="?file=<?= urlencode($result) ?>" data-fullname="<?= basename($result) ?>"><?= basename($result) ?></a></td>
-    <td data-label="Size"><?= is_dir($result) ? 'Folder' : convert_filesize(filesize($result)) ?></td>
-    <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', filemtime($result))) ?></td>
-    <td class="actions">
-        <?php if (!is_dir($result)): ?>
-            <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
-                <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
-                <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>"><i class="fa-solid fa-trash fa-xs"></i></button>
-                <a href="?file=<?= urlencode($result) ?>" class="btn green"><i class="fa-solid fa-download fa-xs"></i></a>
-            <?php endif; ?>
-        <?php endif; ?>
-    </td>
-</tr>
-<?php endforeach; ?>
+                            <td colspan="5" class="name"><i class="fa-solid fa-folder"></i><a href="?file=<?= urlencode(dirname($_GET['file'])) ?>">..</a></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php foreach ($results as $result): ?>
+                        <?php
+                            $is_dir = is_dir($result);
+                            $file_size = $is_dir ? 'Folder' : convert_filesize(filesize($result));
+                            $file_mtime = filemtime($result);
+                            $file_uploaded = time_elapsed_string($file_mtime);
+                            $file_name = basename($result);
+                        ?>
+                        <tr class="file" data-file="<?= htmlspecialchars($result) ?>">
+                            <td class="name" data-label="Name">
+                                <?= get_filetype_icon($result) ?>
+                                <?php if ($is_dir): ?>
+                                    <a href="?file=<?= urlencode($result) ?>" class="view-file truncate" data-fullname="<?= htmlspecialchars($file_name) ?>"><?= htmlspecialchars($file_name) ?></a>
+                                <?php else: ?>
+                                    <a class="view-file truncate" href="?file=<?= urlencode($result) ?>" data-fullname="<?= htmlspecialchars($file_name) ?>"><?= htmlspecialchars($file_name) ?></a>
+                                <?php endif; ?>
+                            </td>
+                            <td data-label="Size"><?= $file_size ?></td>
+                            <td class="date" data-label="Modified"><?= str_replace(date('F j, Y'), 'Today,', date('F j, Y H:ia', $file_mtime)) ?></td>
+                            <td data-label="Uploaded"><?= $file_uploaded ?></td> <!-- Display Upload Time -->
+                            <td class="actions">
+                                <?php if (!$is_dir): ?>
+                                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                                        <a href="rename.php?file=<?= urlencode($result) ?>" class="btn blue" title="Rename"><i class="fa-solid fa-pen-to-square fa-xs"></i></a>
+                                        <button class="btn red delete-btn" data-file="<?= htmlspecialchars($result) ?>" title="Delete"><i class="fa-solid fa-trash fa-xs"></i></button>
+                                        <a href="?file=<?= urlencode($result) ?>" class="btn green" title="Download"><i class="fa-solid fa-download fa-xs"></i></a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -387,13 +503,13 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
 
             $(".prev").on("click", function() {
                 currentIndex = (currentIndex > 0) ? currentIndex - 1 : images.length - 1;
-                modalImg.src = images[currentIndex].href;
+                modalImg.src = images.eq(currentIndex).attr('href');
                 captionText.innerHTML = images.eq(currentIndex).data("fullname"); // Set full filename in caption
             });
 
             $(".next").on("click", function() {
                 currentIndex = (currentIndex < images.length - 1) ? currentIndex + 1 : 0;
-                modalImg.src = images[currentIndex].href;
+                modalImg.src = images.eq(currentIndex).attr('href');
                 captionText.innerHTML = images.eq(currentIndex).data("fullname"); // Set full filename in caption
             });
 
@@ -412,4 +528,3 @@ $breadcrumb = build_breadcrumb($initial_directory, $current_directory);
     </script>
 </body>
 </html>
-

@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "aejot1234";  // NULL password, typically used for localhost without a password
+$password = "";  // NULL password, typically used for localhost without a password
 $dbname = "crudimg";
 
 // Create connection
